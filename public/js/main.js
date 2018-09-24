@@ -22743,56 +22743,144 @@ if (process.env.NODE_ENV === 'production') {
 }).call(this,require('_process'))
 },{"./cjs/schedule-tracing.development.js":17,"./cjs/schedule-tracing.production.min.js":18,"_process":8}],23:[function(require,module,exports){
 var React = require('react');
-var ReactDOM = require('react-dom');
 var ListItem = require('./ListItem.jsx');
 var createReactClass = require('create-react-class');
-var ingredients = [{ "id": 1, "text": "ham" }, { "id": 2, "text": "cheese" }, { "id": 3, "text": "cake" }];
 
 var List = createReactClass({
     displayName: 'List',
 
     render: function () {
-        var listitems = ingredients.map(function (item) {
-            return React.createElement(ListItem, { key: item.id, ingredient: item.text });
-        });
+        //React wants lists that can be uniquely identified. This is why we set a unique key
+        var createItem = function (text, index) {
+            return React.createElement(ListItem, { key: index + text, text: text });
+        };
 
+        //Goes through each item in the items dataset and creates a ListItem component
+        //for each item
         return React.createElement(
             'ul',
             null,
-            listitems
+            this.props.items.map(createItem)
         );
     }
 });
+
 module.exports = List;
 
-},{"./ListItem.jsx":24,"create-react-class":2,"react":16,"react-dom":13}],24:[function(require,module,exports){
+},{"./ListItem.jsx":24,"create-react-class":2,"react":16}],24:[function(require,module,exports){
+var React = require('react');
+var X = require('create-react-class');
+var ListItem = X({
+  render: function () {
+    return React.createElement(
+      'li',
+      null,
+      React.createElement(
+        'h4',
+        null,
+        this.props.text
+      )
+    );
+  }
+});
+
+module.exports = ListItem;
+
+},{"create-react-class":2,"react":16}],25:[function(require,module,exports){
 var React = require('react');
 var ReactDOM = require('react-dom');
 var createReactClass = require('create-react-class');
-var ListItem = createReactClass({
-    displayName: 'ListItem',
+var List = require('./List.jsx');
+var ListManager = createReactClass({
+    displayName: 'ListManager',
 
+    getInitialState: function () {
+        return { items: [], newItemText: '' };
+    },
+    onChange: function (e) {
+        this.setState({ newItemText: e.target.value });
+    },
+
+    handleSubmit: function (e) {
+        e.preventDefault();
+
+        var currentItems = this.state.items;
+
+        currentItems.push(this.state.newItemText);
+
+        this.setState({ items: currentItems, newItemText: '' });
+    },
     render: function () {
+        //onChange is called with every keystroke so we can store the most recent data entered
+        //value is what the user sees in the input box - we point this to newItemText so it updates on every keystroke
+
+        var divStyle = {
+            marginTop: 10
+        };
+
+        var headingStyle = {};
+
+        if (this.props.headingColor) {
+            headingStyle.background = this.props.headingColor;
+        }
+
         return React.createElement(
-            'li',
-            null,
+            'div',
+            { style: divStyle, className: 'col-sm-4' },
             React.createElement(
-                'h4',
-                null,
-                this.props.ingredient,
-                ' '
+                'div',
+                { className: 'panel panel-primary' },
+                React.createElement(
+                    'div',
+                    { style: headingStyle, className: 'panel-heading' },
+                    React.createElement(
+                        'h3',
+                        null,
+                        this.props.title
+                    )
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'row panel-body' },
+                    React.createElement(
+                        'form',
+                        { onSubmit: this.handleSubmit },
+                        React.createElement(
+                            'div',
+                            { className: 'col-sm-9' },
+                            React.createElement('input', { className: 'form-control', onChange: this.onChange, value: this.state.newItemText })
+                        ),
+                        React.createElement(
+                            'div',
+                            { className: 'col-sm-2' },
+                            React.createElement(
+                                'button',
+                                { className: 'btn btn-primary' },
+                                'Add'
+                            )
+                        )
+                    )
+                ),
+                React.createElement(List, { items: this.state.items })
             )
         );
     }
 });
 
-module.exports = ListItem;
+module.exports = ListManager;
 
-},{"create-react-class":2,"react":16,"react-dom":13}],25:[function(require,module,exports){
+},{"./List.jsx":23,"create-react-class":2,"react":16,"react-dom":13}],26:[function(require,module,exports){
+
+/*  This is the entry point file for our application. This is the file you will use to construct
+ *  your HTML. You will use your pre-created Components and then locate the HTML elements that you created
+ *  in your index.html and render the Component
+*/
 var React = require('react');
 var ReactDOM = require('react-dom');
-var List = require('./components/List.jsx');
+var ListManager = require('./components/ListManager.jsx');
 
-ReactDOM.render(React.createElement(List, null), document.getElementById('ingredients'));
+ReactDOM.render(React.createElement(ListManager, { title: 'Ingredients' }), document.getElementById('ingredients'));
+ReactDOM.render(React.createElement(ListManager, { title: 'ToDo' }), document.getElementById('todo'));
+ReactDOM.render(React.createElement(ListManager, { title: 'Christmas', headingColor: '#b31217' }), document.getElementById('christmas'));
 
-},{"./components/List.jsx":23,"react":16,"react-dom":13}]},{},[25]);
+},{"./components/ListManager.jsx":25,"react":16,"react-dom":13}]},{},[26]);
